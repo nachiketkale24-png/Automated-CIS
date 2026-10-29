@@ -1,0 +1,74 @@
+[
+  {
+    "rule_id": "NET-SSH-001",
+    "title": "Ensure SSH is enabled for device management",
+    "description": "All network device management must use SSH (v2). Telnet transmits credentials in plaintext and must be disabled.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-NET-SSH-001 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "services.ssh_enabled",
+    "operator": "is_true",
+    "expected_value": true,
+    "remediation": "Configure 'ip ssh version 2' and remove any 'transport input telnet' lines from VTY lines.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "NET-TELNET-002",
+    "title": "Ensure Telnet is disabled on all VTY lines",
+    "description": "Telnet provides unencrypted access and must not be permitted on any VTY line.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-NET-TELNET-002 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "services.telnet_enabled",
+    "operator": "is_false",
+    "expected_value": false,
+    "remediation": "On all VTY lines set 'transport input ssh'. Remove 'transport input telnet' and 'transport input all'.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "NET-LOG-003",
+    "title": "Ensure logging is configured to a remote syslog server",
+    "description": "Centralised logging provides an audit trail for security events. Devices must ship logs to a remote syslog host.",
+    "severity": "Medium",
+    "benchmark_reference": "ILLUSTRATIVE-NET-LOG-003 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "logging.remote_host",
+    "operator": "exists",
+    "expected_value": null,
+    "remediation": "Add 'logging host <syslog-server-ip>' and set 'logging trap informational'.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "NET-ACL-004",
+    "title": "Ensure an access control list restricts management access",
+    "description": "Management-plane access (SSH, SNMP) should be restricted via an ACL to authorised source networks only.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-NET-ACL-004 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "acls.mgmt_acl_present",
+    "operator": "is_true",
+    "expected_value": true,
+    "remediation": "Define a named or numbered ACL that permits only authorised management hosts and apply it to VTY lines with 'access-class'.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "NET-BANNER-005",
+    "title": "Ensure a login warning banner is configured",
+    "description": "A warning banner informs users that the device is for authorised use only and that activity may be monitored.",
+    "severity": "Low",
+    "benchmark_reference": "ILLUSTRATIVE-NET-BANNER-005 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "banner.login_banner",
+    "operator": "exists",
+    "expected_value": null,
+    "remediation": "Configure 'banner login ^C <warning text> ^C' with appropriate legal notice language.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "NET-SNMP-006",
+    "title": "Ensure SNMPv1 and SNMPv2c community strings are not default",
+    "description": "Default SNMP community strings ('public', 'private') are widely known and must be changed or SNMP disabled.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-NET-SNMP-006 (custom example rule based on CIS Cisco IOS 17 Benchmark principles)",
+    "evidence_path": "snmp.default_community",
+    "operator": "is_false",
+    "expected_value": false,
+    "remediation": "Remove default community strings with 'no snmp-server community public' and 'no snmp-server community private'. Prefer SNMPv3.",
+    "version": "1.0"
+  }
+]

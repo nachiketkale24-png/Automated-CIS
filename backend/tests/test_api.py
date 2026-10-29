@@ -4,21 +4,23 @@ Test suite for CIS Compliance Auditor API.
 Uses an isolated SQLite in-memory database via FastAPI dependency overrides
 so tests run without MySQL.
 """
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import app.models  # noqa: F401 – register models before any test
 from app.db.base import Base
 from app.db.session import get_db
-from app.main import app
+from app.main import app as fastapi_app
 
 
 # ── Isolated test DB (file-based so SQLAlchemy JSON type works across threads) ──
 # The fixture drops all tables and deletes the file on teardown.
 TEST_DATABASE_URL = "sqlite:///./test_cis_auditor.db"
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
 
 
 def override_get_db():
@@ -29,24 +31,23 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
+fastapi_app.dependency_overrides[get_db] = override_get_db  # module-level
 
 
 @pytest.fixture(autouse=True)
 def setup_teardown():
-    """Create all tables before each test, drop + delete file after."""
-    import os
-    import app.models  # noqa: F401  – register models with Base.metadata
-    Base.metadata.create_all(bind=engine)
+    """Create all tables before each test; drop and delete file after."""
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+    Base.metadata.create_all(bind=_engine)
     yield
-    Base.metadata.drop_all(bind=engine)
-    engine.dispose()
-    db_path = "test_cis_auditor.db"
-    if os.path.exists(db_path):
-        os.remove(db_path)
+    Base.metadata.drop_all(bind=_engine)
+    _engine.dispose()
+    if os.path.exists("test_cis_auditor.db"):
+        os.remove("test_cis_auditor.db")
+    fastapi_app.dependency_overrides[get_db] = override_get_db
 
 
-client = TestClient(app)
+client = TestClient(fastapi_app)
 
 
 # ═══════════════════════════════════════════════════════════════════════

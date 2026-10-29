@@ -1,0 +1,33 @@
+! Cisco IOS 17 - MODIFIED (INSECURE) Configuration
+! This is a simulated fixture for CIS compliance demonstration.
+! Intentionally misconfigured to produce FAIL findings.
+! NOT a real device configuration.
+version 17.6
+!
+hostname MODIFIED-RTR-01
+!
+! --- No SSH configured ---
+! ip ssh version 2  <-- MISSING: SSH not configured
+!
+! --- VTY Lines (Telnet ALLOWED - insecure) ---
+line vty 0 4
+ transport input telnet
+ login local
+ exec-timeout 0 0
+!
+! --- No management ACL applied ---
+! access-class MGMT-ACCESS in  <-- MISSING: no ACL restriction
+!
+! --- Logging to remote host missing ---
+logging on
+logging buffered 16384
+! logging host 10.10.10.50  <-- MISSING: no remote syslog
+!
+! --- Default SNMP community strings present ---
+snmp-server community public RO
+snmp-server community private RW
+!
+! --- No login banner ---
+! banner login  <-- MISSING: no warning banner
+!
+end

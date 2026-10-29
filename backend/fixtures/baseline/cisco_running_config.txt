@@ -1,0 +1,44 @@
+! Cisco IOS 17 - BASELINE (SECURE) Configuration
+! This is a simulated fixture for CIS compliance demonstration.
+! NOT a real device configuration.
+version 17.6
+!
+hostname BASELINE-RTR-01
+!
+! --- AAA / SSH ---
+ip domain-name example.internal
+crypto key generate rsa modulus 2048
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 3
+!
+! --- VTY Lines (SSH only, Telnet blocked) ---
+line vty 0 4
+ transport input ssh
+ access-class MGMT-ACCESS in
+ login local
+ exec-timeout 10 0
+!
+! --- Management ACL ---
+ip access-list standard MGMT-ACCESS
+ permit 10.10.10.0 0.0.0.255
+ deny   any log
+!
+! --- Logging ---
+logging on
+logging host 10.10.10.50
+logging trap informational
+logging buffered 16384
+!
+! --- SNMP (no default community strings) ---
+no snmp-server community public
+no snmp-server community private
+snmp-server community CIS-SECURE-STRING RO MGMT-ACCESS
+!
+! --- Login Banner ---
+banner login ^C
+WARNING: Unauthorised access to this device is prohibited.
+All activity is monitored and logged.
+^C
+!
+end

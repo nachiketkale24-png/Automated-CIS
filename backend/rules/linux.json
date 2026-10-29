@@ -1,0 +1,62 @@
+[
+  {
+    "rule_id": "LNX-SSH-001",
+    "title": "Ensure SSH Protocol is set to 2",
+    "description": "SSHv1 contains known cryptographic weaknesses. Only SSHv2 should be permitted.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-LNX-SSH-001 (custom example rule based on CIS Ubuntu Linux 22.04 LTS Benchmark principles)",
+    "evidence_path": "sshd.protocol",
+    "operator": "not_equals",
+    "expected_value": "1",
+    "remediation": "Set 'Protocol 2' in /etc/ssh/sshd_config and restart sshd.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "LNX-SSH-002",
+    "title": "Ensure SSH root login is disabled",
+    "description": "Direct root login over SSH bypasses individual user accountability.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-LNX-SSH-002 (custom example rule based on CIS Ubuntu Linux 22.04 LTS Benchmark principles)",
+    "evidence_path": "sshd.permit_root_login",
+    "operator": "equals",
+    "expected_value": "no",
+    "remediation": "Set 'PermitRootLogin no' in /etc/ssh/sshd_config and restart sshd.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "LNX-PASS-003",
+    "title": "Ensure password hashing algorithm is SHA-512",
+    "description": "Weak password hashing (MD5, DES) makes offline brute-force attacks feasible.",
+    "severity": "Medium",
+    "benchmark_reference": "ILLUSTRATIVE-LNX-PASS-003 (custom example rule based on CIS Ubuntu Linux 22.04 LTS Benchmark principles)",
+    "evidence_path": "pam.password_hash",
+    "operator": "contains",
+    "expected_value": "sha512",
+    "remediation": "Ensure 'password [success=1 default=ignore] pam_unix.so obscure sha512' is present in /etc/pam.d/common-password.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "LNX-FW-004",
+    "title": "Ensure a firewall is active (ufw or iptables)",
+    "description": "An active host-based firewall provides defence-in-depth against unauthorized network access.",
+    "severity": "High",
+    "benchmark_reference": "ILLUSTRATIVE-LNX-FW-004 (custom example rule based on CIS Ubuntu Linux 22.04 LTS Benchmark principles)",
+    "evidence_path": "firewall.active",
+    "operator": "is_true",
+    "expected_value": true,
+    "remediation": "Enable ufw with 'ufw enable' or ensure iptables has a deny-all default policy.",
+    "version": "1.0"
+  },
+  {
+    "rule_id": "LNX-CRON-005",
+    "title": "Ensure cron daemon is running",
+    "description": "Cron is required for scheduled security-related tasks such as log rotation and integrity checks.",
+    "severity": "Low",
+    "benchmark_reference": "ILLUSTRATIVE-LNX-CRON-005 (custom example rule)",
+    "evidence_path": "services.cron_active",
+    "operator": "is_true",
+    "expected_value": true,
+    "remediation": "Enable and start cron: 'systemctl enable --now cron'.",
+    "version": "1.0"
+  }
+]

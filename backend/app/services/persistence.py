@@ -22,7 +22,8 @@ def get_asset(db: Session, asset_id: int) -> Asset:
 
 
 def create_asset(db: Session, data: AssetCreate) -> Asset:
-    asset = Asset(**data.model_dump())
+    # mode="json" serialises Enum to its .value string — works with both MySQL and SQLite
+    asset = Asset(**data.model_dump(mode="json"))
     db.add(asset)
     db.commit()
     db.refresh(asset)
