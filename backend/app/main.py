@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.db.init_db import init_db
 from app.db.session import SessionLocal
-from app.api.routes import assets, audits, drift, run_audit
+from app.api.routes import assets, audits, drift, run_audit, correlations
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +70,4 @@ app.include_router(assets.router, prefix=settings.api_prefix)
 app.include_router(audits.router, prefix=settings.api_prefix)
 app.include_router(drift.router, prefix=settings.api_prefix)
 app.include_router(run_audit.router, prefix=settings.api_prefix)
+app.include_router(correlations.router, prefix=settings.api_prefix)
