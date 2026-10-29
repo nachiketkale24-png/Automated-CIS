@@ -12,6 +12,7 @@ class Audit(Base):
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="COMPLETED")
     score: Mapped[float | None] = mapped_column(Float, nullable=True)
     is_simulated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    benchmark_version: Mapped[str | None] = mapped_column(String(120), nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
