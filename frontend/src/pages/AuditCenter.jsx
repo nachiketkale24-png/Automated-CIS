@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { ClipboardCheck, Play, Clock3, ShieldCheck } from "lucide-react";
 import StatusBadge from "../components/common/StatusBadge";
@@ -143,6 +142,8 @@ export default function AuditCenter() {
     },
   ];
 
+  const selectedAsset = assets.find(a => String(a.id) === assetId);
+
   return (
     <>
       <PageHeader
@@ -177,7 +178,18 @@ export default function AuditCenter() {
             Target asset
             <select
               value={assetId}
-              onChange={(event) => setAssetId(event.target.value)}
+              onChange={(event) => {
+                const newAssetId = event.target.value;
+                setAssetId(newAssetId);
+                const ast = assets.find(a => String(a.id) === newAssetId);
+                if (ast && !fixture) {
+                  if (ast.asset_type?.toLowerCase() === "windows") {
+                    setBenchmark("CIS_Windows_Server_2022_v1.0_ILLUSTRATIVE");
+                  } else if (ast.asset_type?.toLowerCase() === "linux") {
+                    setBenchmark("CIS_Ubuntu_Linux_22.04_v1.0");
+                  }
+                }
+              }}
               disabled={loading || assets.length === 0 || running}
             >
               {assets.length === 0 && (
@@ -185,7 +197,7 @@ export default function AuditCenter() {
               )}
               {assets.map((asset) => (
                 <option key={asset.id} value={String(asset.id)}>
-                  {asset.name} (ID: {asset.id})
+                  {asset.name} (ID: {asset.id} · {asset.platform || asset.asset_type})
                 </option>
               ))}
             </select>
@@ -198,7 +210,18 @@ export default function AuditCenter() {
               onChange={(event) => {
                 const value = event.target.value;
                 setFixture(value);
-                setBenchmark("CIS_Cisco_IOS_17_v2.1.0");
+                if (value.startsWith("windows")) {
+                  setBenchmark("CIS_Windows_Server_2022_v1.0_ILLUSTRATIVE");
+                } else if (value.startsWith("cisco")) {
+                  setBenchmark("CIS_Cisco_IOS_17_v2.1.0");
+                } else if (!value) {
+                  const ast = assets.find(a => String(a.id) === assetId);
+                  if (ast?.asset_type?.toLowerCase() === "windows") {
+                    setBenchmark("CIS_Windows_Server_2022_v1.0_ILLUSTRATIVE");
+                  } else {
+                    setBenchmark("CIS_Ubuntu_Linux_22.04_v1.0");
+                  }
+                }
               }}
               disabled={running}
             >
@@ -208,8 +231,14 @@ export default function AuditCenter() {
               <option value="cisco_modified">
                 Cisco modified — configuration issues
               </option>
+              <option value="windows_baseline">
+                Windows baseline — passing configuration
+              </option>
+              <option value="windows_hardened">
+                Windows hardened — configuration issues
+              </option>
               <option value="">
-                Live Linux collection (Linux assets only)
+                Live collection (Linux or Windows host)
               </option>
             </select>
           </label>
@@ -232,12 +261,17 @@ export default function AuditCenter() {
             <ShieldCheck size={16} />
             {fixture
               ? "Simulated fixture audit"
-              : "Live Linux collection attempt"}
+              : "Live host collection attempt"}
           </span>
           <button
             className="primary-button"
             onClick={handleRunAudit}
-            disabled={loading || running || !assetId || (!fixture && assets.find(a => String(a.id) === assetId)?.asset_type !== "linux")}
+            disabled={
+              loading ||
+              running ||
+              !assetId ||
+              (!fixture && !["linux", "windows"].includes(selectedAsset?.asset_type?.toLowerCase()))
+            }
           >
             <Play size={16} />
             {running ? "Running audit..." : "Run audit"}
@@ -245,7 +279,7 @@ export default function AuditCenter() {
         </div>
 
         <p className="field-hint">
-          Cisco fixtures assess Cisco network rules and are always marked simulated, even if the selected asset has another platform label. Live collection is supported only for Linux assets.
+          Cisco fixtures assess Cisco network rules. Windows fixtures assess Windows Server CIS rules. Live collection is supported for Linux and Windows assets.
         </p>
 
         {loading && <p className="field-hint">Loading assets and audit history...</p>}

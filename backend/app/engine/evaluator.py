@@ -38,6 +38,35 @@ def _get_nested(data: dict, path: str) -> tuple[bool, Any]:
     return True, current
 
 
+def _to_bool(value: Any) -> bool | None:
+    """
+    Safely convert a value to bool.
+
+    Returns:
+        True   -- for Python True, 1, or strings 'true'/'yes'/'1' (case-insensitive)
+        False  -- for Python False, 0, or strings 'false'/'no'/'0' (case-insensitive)
+        None   -- for None, ambiguous strings, or unparseable types (produces MANUAL)
+    """
+    if value is None:
+        return None
+    if type(value) is bool:
+        return value
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+        return None
+    if isinstance(value, str):
+        lower = value.strip().lower()
+        if lower in ("true", "yes", "1"):
+            return True
+        if lower in ("false", "no", "0"):
+            return False
+        return None
+    return None
+
+
 def _evaluate_operator(operator: str, actual: Any, expected: Any) -> tuple[str, str]:
     """
     Apply the operator.  Returns (status, explanation_of_actual).
@@ -50,12 +79,16 @@ def _evaluate_operator(operator: str, actual: Any, expected: Any) -> tuple[str, 
     expected_str = str(expected).strip().lower() if expected is not None else None
 
     if operator == "is_true":
-        passed = bool(actual) is True
-        return (STATUS_PASS if passed else STATUS_FAIL), str(actual)
+        bool_val = _to_bool(actual)
+        if bool_val is None:
+            return STATUS_MANUAL, str(actual)
+        return (STATUS_PASS if bool_val is True else STATUS_FAIL), str(actual)
 
     if operator == "is_false":
-        passed = bool(actual) is False
-        return (STATUS_PASS if passed else STATUS_FAIL), str(actual)
+        bool_val = _to_bool(actual)
+        if bool_val is None:
+            return STATUS_MANUAL, str(actual)
+        return (STATUS_PASS if bool_val is False else STATUS_FAIL), str(actual)
 
     if operator == "exists":
         # The caller already confirmed the path exists before reaching here,

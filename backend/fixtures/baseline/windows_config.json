@@ -1,0 +1,44 @@
+{
+  "_source": "windows_fixture:windows_baseline",
+  "os": {
+    "caption": "Microsoft Windows Server 2022 Standard",
+    "version": "10.0.20348",
+    "build_number": "20348"
+  },
+  "firewall": {
+    "domain_enabled": true,
+    "private_enabled": true,
+    "public_enabled": true
+  },
+  "defender": {
+    "antivirus_enabled": true,
+    "real_time_protection": true
+  },
+  "accounts": {
+    "guest_enabled": false,
+    "administrator_renamed": true
+  },
+  "password_policy": {
+    "min_length": 14,
+    "max_age_days": 60,
+    "complexity_enabled": true,
+    "lockout_threshold": 5
+  },
+  "audit_policy": {
+    "logon_events": "Success, Failure",
+    "account_logon": "Success, Failure"
+  },
+  "smb": {
+    "smb1_enabled": false
+  },
+  "rdp": {
+    "enabled": true,
+    "nla_required": true
+  },
+  "bitlocker": {
+    "os_drive_protected": true
+  },
+  "services": {
+    "telnet_installed": false
+  }
+}

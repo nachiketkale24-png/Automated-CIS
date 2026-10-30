@@ -76,7 +76,7 @@ def load_rules(path: str | Path) -> list[dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Rule file not found: {path}")
 
-    with path.open(encoding="utf-8") as fh:
+    with path.open(encoding="utf-8-sig") as fh:
         rules = json.load(fh)
 
     if not isinstance(rules, list):
@@ -100,7 +100,7 @@ def load_rules_for_asset_type(rules_dir: str | Path, asset_type: str) -> list[di
     Mapping:
       - firewall / router / switch / network_device -> network.json
       - linux                                       -> linux.json
-      - windows                                     -> (not yet implemented, returns [])
+      - windows                                     -> windows.json
 
     Returns an empty list (not an error) if no rule file covers this asset type.
     """
@@ -111,6 +111,7 @@ def load_rules_for_asset_type(rules_dir: str | Path, asset_type: str) -> list[di
         "switch": "network.json",
         "network_device": "network.json",
         "linux": "linux.json",
+        "windows": "windows.json",
     }
 
     filename = mapping.get(asset_type.lower())

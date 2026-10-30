@@ -1,0 +1,44 @@
+﻿{
+    "_source":  "windows_live:CHINMAY_PC",
+    "os":  {
+               "caption":  "Windows 10 Home",
+               "build_number":  "26200",
+               "version":  "10.0.26200.0"
+           },
+    "firewall":  {
+                     "domain_enabled":  true,
+                     "public_enabled":  true,
+                     "private_enabled":  true
+                 },
+    "defender":  {
+                     "antivirus_enabled":  null,
+                     "real_time_protection":  null
+                 },
+    "accounts":  {
+                     "administrator_renamed":  null,
+                     "guest_enabled":  null
+                 },
+    "password_policy":  {
+                            "max_age_days":  null,
+                            "min_length":  null,
+                            "lockout_threshold":  null,
+                            "complexity_enabled":  null
+                        },
+    "audit_policy":  {
+                         "logon_events":  null,
+                         "account_logon":  null
+                     },
+    "smb":  {
+                "smb1_enabled":  false
+            },
+    "rdp":  {
+                "nla_required":  true,
+                "enabled":  false
+            },
+    "bitlocker":  {
+                      "os_drive_protected":  null
+                  },
+    "services":  {
+                     "telnet_installed":  false
+                 }
+}

@@ -1,15 +1,15 @@
 [
   {
     "rule_id": "LNX-SSH-001",
-    "title": "Ensure SSH Protocol is set to 2",
-    "description": "SSHv1 contains known cryptographic weaknesses. Only SSHv2 should be permitted.",
+    "title": "Ensure SSH empty passwords are not permitted",
+    "description": "Disallowing empty passwords ensures all SSH user authentication requires valid credentials.",
     "severity": "High",
     "benchmark_reference": "ILLUSTRATIVE-LNX-SSH-001 (custom example rule based on CIS Ubuntu Linux 22.04 LTS Benchmark principles)",
-    "evidence_path": "sshd.protocol",
-    "operator": "not_equals",
-    "expected_value": "1",
-    "remediation": "Set 'Protocol 2' in /etc/ssh/sshd_config and restart sshd.",
-    "version": "1.0"
+    "evidence_path": "sshd.permit_empty_passwords",
+    "operator": "equals",
+    "expected_value": "no",
+    "remediation": "Set 'PermitEmptyPasswords no' in /etc/ssh/sshd_config and restart sshd.",
+    "version": "1.1"
   },
   {
     "rule_id": "LNX-SSH-002",

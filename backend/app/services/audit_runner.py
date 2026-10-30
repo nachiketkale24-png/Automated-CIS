@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.collectors import cisco as cisco_collector
 from app.collectors import linux as linux_collector
+from app.collectors import windows as windows_collector
 from app.engine.evaluator import evaluate_rules
 from app.engine.loader import RuleValidationError, load_rules_for_asset_type
 from app.engine.scorer import compute_score
@@ -34,6 +35,8 @@ _FIXTURES_DIR = Path(__file__).parent.parent.parent / "fixtures"
 SUPPORTED_FIXTURES = {
     "cisco_baseline": _FIXTURES_DIR / "baseline" / "cisco_running_config.txt",
     "cisco_modified": _FIXTURES_DIR / "modified" / "cisco_running_config.txt",
+    "windows_baseline": _FIXTURES_DIR / "baseline" / "windows_config.json",
+    "windows_hardened": _FIXTURES_DIR / "hardened" / "windows_config.json",
 }
 
 
@@ -45,7 +48,7 @@ def _collect_evidence(
     Collect evidence for the given asset.
 
     If fixture_name is provided, loads from that fixture file (is_simulated=True).
-    Otherwise attempts live Linux collection on the current host.
+    Otherwise attempts live collection based on asset_type (Linux or Windows).
 
     Raises HTTPException(400) for unknown fixture names.
     Returns an evidence dict (may contain '_error' key on failure).
@@ -58,15 +61,23 @@ def _collect_evidence(
                        f"Supported: {sorted(SUPPORTED_FIXTURES.keys())}",
             )
         path = SUPPORTED_FIXTURES[fixture_name]
-        return cisco_collector.collect_from_file(
-            path,
-            source_label=f"cisco_fixture:{fixture_name}",
-        )
+        if fixture_name.startswith("cisco"):
+            return cisco_collector.collect_from_file(
+                path,
+                source_label=f"cisco_fixture:{fixture_name}",
+            )
+        if fixture_name.startswith("windows"):
+            return windows_collector.collect_from_file(
+                path,
+                source_label=f"windows_fixture:{fixture_name}",
+            )
 
     # No fixture → live collection based on asset_type
     asset_type = asset.asset_type.lower()
     if asset_type == "linux":
         return linux_collector.collect()
+    if asset_type == "windows":
+        return windows_collector.collect()
 
     raise HTTPException(
         status_code=400,
@@ -92,28 +103,29 @@ def run_audit(
       7. Return summary
 
     An audit is only marked COMPLETED when steps 4-6 all succeed.
-    On any error, the audit is saved as 'ERROR' status.
-
-    Args:
-        db:                SQLAlchemy session (injected via FastAPI Depends).
-        asset_id:          ID of the asset to audit.
-        fixture_name:      Optional fixture key (e.g. 'cisco_baseline').
-        benchmark_version: Optional benchmark version string.
-
-    Returns:
-        dict with: audit_id, status, score, coverage_pct, finding_counts,
-                   is_simulated, asset_id, benchmark_version, fixture_name
+    On any collection error, the audit is saved as 'ERROR' status.
     """
     # 1. Validate asset
     asset = get_asset(db, asset_id)  # raises 404 if not found
 
     # Determine effective asset_type for rule loading
-    effective_type = asset.asset_type
+    effective_type = asset.asset_type.lower()
     is_simulated = fixture_name is not None
 
     # For Cisco fixtures, force the rule set to 'router'
     if fixture_name and fixture_name.startswith("cisco"):
         effective_type = "router"
+    elif fixture_name and fixture_name.startswith("windows"):
+        effective_type = "windows"
+
+    # Set default benchmark_version if not provided
+    if not benchmark_version:
+        if effective_type == "windows":
+            benchmark_version = "CIS_Windows_Server_2022_v1.0_ILLUSTRATIVE"
+        elif effective_type in ("router", "firewall", "switch", "network_device"):
+            benchmark_version = "CIS_Cisco_IOS_17_v2.1.0"
+        elif effective_type == "linux":
+            benchmark_version = "CIS_Ubuntu_Linux_22.04_v1.0"
 
     # 2. Load rules
     try:
@@ -171,7 +183,7 @@ def run_audit(
         )
         db.add(finding)
 
-    # Persist snapshot (normalised evidence, excluding internal _source key)
+    # Persist snapshot (normalised evidence, excluding internal _source and _error keys)
     snapshot_evidence = {k: v for k, v in evidence.items() if not k.startswith("_")}
     snapshot = Snapshot(
         audit_id=audit.id,

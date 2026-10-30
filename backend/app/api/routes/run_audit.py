@@ -21,12 +21,12 @@ class RunAuditRequest(BaseModel):
         description=(
             "Name of a pre-defined fixture for simulated audits. "
             f"Supported values: {sorted(SUPPORTED_FIXTURES.keys())}. "
-            "If None, attempts live collection (Linux only)."
+            "If None, attempts live collection (Linux or Windows)."
         ),
     )
     benchmark_version: str | None = Field(
         default=None,
-        description="Optional benchmark version string, e.g. 'CIS_Cisco_IOS_17_v2.1.0'",
+        description="Optional benchmark version string, e.g. 'CIS_Cisco_IOS_17_v2.1.0' or 'CIS_Windows_Server_2022_v1.0_ILLUSTRATIVE'",
     )
 
 
@@ -47,7 +47,7 @@ def trigger_audit(payload: RunAuditRequest, db: Session = Depends(get_db)):
     """
     Trigger a full CIS compliance audit for an asset.
 
-    - **fixture_name**: use 'cisco_baseline' or 'cisco_modified' for demos.
+    - **fixture_name**: use 'cisco_baseline', 'cisco_modified', 'windows_baseline', or 'windows_hardened'.
     - Findings are persisted and retrievable at GET /api/audits/{audit_id}/findings.
     - All fixture audits are marked is_simulated=true.
     - Score = PASS/(PASS+FAIL)*100. None if no assessable findings.

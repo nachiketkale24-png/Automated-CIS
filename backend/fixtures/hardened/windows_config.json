@@ -1,0 +1,44 @@
+{
+  "_source": "windows_fixture:windows_hardened",
+  "os": {
+    "caption": "Microsoft Windows Server 2019 Standard",
+    "version": "10.0.17763",
+    "build_number": "17763"
+  },
+  "firewall": {
+    "domain_enabled": false,
+    "private_enabled": true,
+    "public_enabled": false
+  },
+  "defender": {
+    "antivirus_enabled": true,
+    "real_time_protection": false
+  },
+  "accounts": {
+    "guest_enabled": true,
+    "administrator_renamed": false
+  },
+  "password_policy": {
+    "min_length": null,
+    "max_age_days": 90,
+    "complexity_enabled": false,
+    "lockout_threshold": null
+  },
+  "audit_policy": {
+    "logon_events": null,
+    "account_logon": null
+  },
+  "smb": {
+    "smb1_enabled": true
+  },
+  "rdp": {
+    "enabled": true,
+    "nla_required": false
+  },
+  "bitlocker": {
+    "os_drive_protected": false
+  },
+  "services": {
+    "telnet_installed": true
+  }
+}
